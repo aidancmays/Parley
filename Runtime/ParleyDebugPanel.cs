@@ -17,6 +17,16 @@ namespace Parley
         [SerializeField] bool visible;
 
         VoicePlayback echo;
+        bool voiceReverb = true;
+
+        // Turns off both the shared listener reverb and any reverb filter on the voice's own chain.
+        static void SetReverb(GameObject go, bool on)
+        {
+            if (go.TryGetComponent<AudioSource>(out var source))
+                source.reverbZoneMix = on ? 1f : 0f;
+            if (go.TryGetComponent<AudioReverbFilter>(out var filter))
+                filter.enabled = on;
+        }
         float[] decoded = new float[4096];
 
         void OnEnable() => VoiceSpeaker.LocalVoiceSent += OnLocalVoice;
@@ -76,6 +86,16 @@ namespace Parley
             if (GUILayout.Button($"Mode: {ParleySettings.Mode}"))
                 ParleySettings.Mode = (VoiceMode)(((int)ParleySettings.Mode + 1) % 3);
             ParleySettings.Loopback = GUILayout.Toggle(ParleySettings.Loopback, "Loopback");
+            bool reverbOn = GUILayout.Toggle(voiceReverb, "Voice reverb");
+            if (reverbOn != voiceReverb)
+            {
+                voiceReverb = reverbOn;
+                foreach (var s in VoiceSpeaker.All)
+                    if (s != null && s.Output != null)
+                        SetReverb(s.Output.gameObject, reverbOn);
+                if (echo != null)
+                    SetReverb(echo.gameObject, reverbOn);
+            }
             GUILayout.Label($"{echoKey}: {(echo == null ? "leave echo here" : "remove echo")}");
             GUILayout.Label($"Sent {VoiceRelay.BytesSent / 1024f:0.0} KB  Relayed {VoiceRelay.BytesRelayed / 1024f:0.0} KB");
             foreach (var s in VoiceSpeaker.All)

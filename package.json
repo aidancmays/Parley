@@ -1,6 +1,6 @@
 {
   "name": "com.aidancmays.parley",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Parley",
   "description": "Proximity voice chat for Netcode for GameObjects over Steam Voice. Each player's voice plays from an AudioSource at their mouth, so it falls off with distance and takes whatever occlusion and reverb the game's 3D sounds get. The host relays voice only to players within earshot. Open mic (Steam's own voice detection) or push to talk, per-player mute and volume, a speaking flag and level for HUDs, and an echo test for trying it alone. Requires SteamNet and Steamworks.NET.",
   "unity": "6000.3",

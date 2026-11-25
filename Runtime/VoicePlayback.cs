@@ -95,7 +95,7 @@ namespace Parley
                 buffer.Read(mono, 0, frames);
                 for (int f = 0; f < frames; f++)
                 {
-                    float v = mono[f] * gain;
+                    float v = SoftClip(mono[f] * gain);
                     peak = Mathf.Max(peak, Mathf.Abs(v));
                     for (int c = 0; c < channels; c++)
                         data[f * channels + c] *= v;
@@ -108,7 +108,7 @@ namespace Parley
                 for (int f = 0; f < frames; f++)
                 {
                     int i = Mathf.Min(needed - 2, (int)(phase + f * ratio));
-                    float v = mono[i] * gain;
+                    float v = SoftClip(mono[i] * gain);
                     peak = Mathf.Max(peak, Mathf.Abs(v));
                     for (int c = 0; c < channels; c++)
                         data[f * channels + c] *= v;
@@ -117,6 +117,16 @@ namespace Parley
                 if (phase < 0) phase = 0;
             }
             level = Mathf.Max(peak, level * 0.85f);
+        }
+
+        // Gentle knee above 0.8 so a loud voice turned up never hard-clips.
+        static float SoftClip(float v)
+        {
+            float a = v < 0f ? -v : v;
+            if (a <= 0.8f)
+                return v;
+            float s = 0.8f + 0.2f * (float)System.Math.Tanh((a - 0.8f) / 0.2f);
+            return v < 0f ? -s : s;
         }
 
         /// <summary>Sets up a source the way voice wants it: fully 3D, no doppler, loud close and silent at a distance.</summary>
